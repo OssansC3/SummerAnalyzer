@@ -58,6 +58,7 @@ public class SummerAnalyzer1 {
 	}
 
 
+
 	// Mapperクラスのmap関数を定義
 	public static class MyMapper extends Mapper<LongWritable, Text, Text, Text> {
 		protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -69,7 +70,7 @@ public class SummerAnalyzer1 {
 			if(isNoisyDay(csv[PosUtils.MONTH],csv[PosUtils.DATE]))return;
 
 			//若いののみ受付
-			if(!isEqual(csv[PosUtils.BUYER_AGE],2)) return;
+			if(!isEqual(csv[PosUtils.BUYER_AGE],1,2)) return;
 
 			//夕方のみ受付
 			if(!isRange(csv[PosUtils.HOUR],16,20)) return ;
