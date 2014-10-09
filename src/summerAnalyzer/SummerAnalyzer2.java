@@ -62,7 +62,8 @@ public class SummerAnalyzer2 {
 	public static class MyMapper extends Mapper<LongWritable, Text, Text, Text> {
 		private static final int TYPE = 0;
 		private static final int COUNT_VACATION = 1;
-		private static final int COUNT_NOT_VACATION = 2;
+		private static final int COUNT_AVERAGE = 2;
+		private static final int COUNT_NOT_VACATION = 3;
 
 		protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
@@ -74,13 +75,14 @@ public class SummerAnalyzer2 {
 
 			// 売り上げを取得
 			String countVacation = format(csv[COUNT_VACATION]);
+			String countAverage = format(csv[COUNT_AVERAGE]);
 			String countNotVacation = format(csv[COUNT_NOT_VACATION]);
 
 			//売り上げ0は無視
 			if(countVacation.equals("0")&&countNotVacation.equals("0")) return;
 
 			// emitする （emitデータはCSKVオブジェクトに変換すること）
-			context.write(new Text(countVacation+"\t"+countNotVacation), new Text(type));
+			context.write(new Text(countVacation+"\t"+countAverage+"\t"+countNotVacation), new Text(type));
 		}
 
 		private String format(String str){

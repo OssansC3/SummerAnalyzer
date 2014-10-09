@@ -121,6 +121,7 @@ public class SummerAnalyzer1 {
 	public static class MyReducer extends Reducer<Text, Text, Text, Text> {
 		private static final int FLAG = 0;
 		private static final int COUNT = 1;
+		private static final int YEAR = 12;
 		protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 
 			// 売り上げを合計
@@ -130,9 +131,15 @@ public class SummerAnalyzer1 {
 				if(list[FLAG].equals("0")) countNotVacation += Long.valueOf(list[COUNT]);
 				else countVacation += Long.valueOf(list[COUNT]);
 			}
+			if((countVacation == 0)&&(countNotVacation == 0)) return;
 
 			// emit
-			context.write(new Text(key),new Text(String.valueOf(countVacation+"\t"+countNotVacation)));
+			context.write(new Text(key),new Text(format(countVacation,countNotVacation)));
+		}
+
+		private String format(long v,long nv){
+			long avg = (v+nv) / YEAR;
+			return String.valueOf(v+"\t"+avg+"\t"+nv);
 		}
 	}
 
