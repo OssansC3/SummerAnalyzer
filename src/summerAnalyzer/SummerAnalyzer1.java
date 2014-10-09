@@ -66,6 +66,9 @@ public class SummerAnalyzer1 {
 			// csvファイルをカンマで分割して，配列に格納する
 			String csv[] = value.toString().split(",");
 
+			//8月を判別するフラグ
+			boolean vacation = false;
+
 			//明らかなノイズ日は除く
 			if(isNoisyDay(csv[PosUtils.MONTH],csv[PosUtils.DATE]))return;
 
@@ -75,8 +78,8 @@ public class SummerAnalyzer1 {
 			//夕方のみ受付
 			if(!isRange(csv[PosUtils.HOUR],16,20)) return ;
 
-			//夏休み(8月)のみ受付
-			if(!isEqual(csv[PosUtils.MONTH],8)) return;
+			//夏休み(8月)を取り出す
+			if(isEqual(csv[PosUtils.MONTH],8)) vacation = true;
 
 			// valueとなる販売個数を取得
 			String count = csv[PosUtils.ITEM_TOTAL_PRICE];
@@ -85,7 +88,11 @@ public class SummerAnalyzer1 {
 			String name = csv[PosUtils.ITEM_CATEGORY_NAME];
 
 			// emitする （emitデータはCSKVオブジェクトに変換すること）
-			context.write(new Text(name), new Text(count));
+			context.write(new Text(name), new Text(vacationFormat(count,vacation)));
+		}
+
+		private static String vacationFormat(String count,boolean vacation){
+			return vacation?"1,"+count:"0,"+count;
 		}
 
 		private static boolean isEqual(String str,int num){
@@ -112,16 +119,20 @@ public class SummerAnalyzer1 {
 
 	// Reducerクラスのreduce関数を定義
 	public static class MyReducer extends Reducer<Text, Text, Text, Text> {
+		private static final int FLAG = 0;
+		private static final int COUNT = 1;
 		protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 
 			// 売り上げを合計
-			long count = 0;
+			long countVacation = 0,countNotVacation = 0;
 			for (Text value : values) {
-				count += Long.valueOf(value.toString());
+				String list[] = value.toString().split(",");
+				if(list[FLAG].equals("0")) countNotVacation += Long.valueOf(list[COUNT]);
+				else countVacation += Long.valueOf(list[COUNT]);
 			}
 
 			// emit
-			context.write(new Text(key),new Text(String.valueOf(count)));
+			context.write(new Text(key),new Text(String.valueOf(countVacation+"\t"+countNotVacation)));
 		}
 	}
 

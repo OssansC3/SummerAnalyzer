@@ -61,7 +61,8 @@ public class SummerAnalyzer2 {
 	// Mapperクラスのmap関数を定義
 	public static class MyMapper extends Mapper<LongWritable, Text, Text, Text> {
 		private static final int TYPE = 0;
-		private static final int COUNT = 1;
+		private static final int COUNT_VACATION = 1;
+		private static final int COUNT_NOT_VACATION = 2;
 
 		protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
@@ -72,19 +73,20 @@ public class SummerAnalyzer2 {
 			String type = csv[TYPE];
 
 			// 売り上げを取得
-			String count = format(csv[COUNT]);
+			String countVacation = format(csv[COUNT_VACATION]);
+			String countNotVacation = format(csv[COUNT_NOT_VACATION]);
 
 			//売り上げ0は無視
-			if(count.equals("0")) return;
+			if(countVacation.equals("0")&&countNotVacation.equals("0")) return;
 
 			// emitする （emitデータはCSKVオブジェクトに変換すること）
-			context.write(new Text(count), new Text(type));
+			context.write(new Text(countVacation+"\t"+countNotVacation), new Text(type));
 		}
 
 		private String format(String str){
 			int length = str.length();
 			StringBuffer output = new StringBuffer();
-			for(int i=0;i<20-length;i++) output.append("0");
+			for(int i=0;i<10-length;i++) output.append("0");
 			return output+str;
 		}
 
